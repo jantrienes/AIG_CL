@@ -401,10 +401,9 @@ def format_to_bert(args):
 
     path = dict()
 
-
-    path['train'] = '../graph_construction/mimir_random_1/random_train_1.jsonl'
-    path['test'] = '../graph_construction/mimir_random_1/random_test_1.jsonl'
-    path['valid'] = '../graph_construction/mimir_random_1/random_valid_1.jsonl'
+    path['train'] = f'{args.raw_path}/train_real_entity_with_graph.jsonl'
+    path['valid'] = f'{args.raw_path}/valid_real_entity_with_graph.jsonl'
+    path['test'] = f'{args.raw_path}/test_real_entity_with_graph.jsonl'
 
     for corpus_type in datasets:
         a_lst = []
@@ -431,15 +430,14 @@ def _format_to_bert(params):
     logger.info('Processing %s' % json_file)
 
     datasets = []
-    count_i = 1
+    count_i = 0
     for line in tqdm(open(json_file,'r').readlines()):
         d = json.loads(line)
 
         # findings = ' '.join(d['findings'])
         # doc = nlp(findings)
 
-        tgt = []
-        tgt.append(d['impression'])
+        tgt = d['impression']
         source = d['findings']
         pyg_edges_document = d['pyg_edges_document']
         words_id_entities = d['words_id_entities']
@@ -495,14 +493,14 @@ def _format_to_bert(params):
                        'entities_findings':entities_findings}
 
         datasets.append(b_data_dict)
-        if(len(datasets) == 2000):
+        if len(datasets) == 2000:
+            # Write in batches
             torch.save(datasets, os.path.join(args.save_path,'radiology.'+corpus_type+'.' + str(count_i) + '.bert.pt'))
             count_i = count_i + 1
             datasets = []
 
-    logger.info('Processed instances %d' % len(datasets))
-    logger.info('Saving to %s' % save_file)
-    torch.save(datasets, save_file)
+    # Write last batch
+    torch.save(datasets, os.path.join(args.save_path,'radiology.'+corpus_type+'.' + str(count_i) + '.bert.pt'))
     datasets = []
     gc.collect()
 
@@ -568,6 +566,3 @@ def _format_to_lines(params):
     print(f)
     source, tgt = load_json(f, args.lower)
     return {'src': source, 'tgt': tgt}
-
-
-

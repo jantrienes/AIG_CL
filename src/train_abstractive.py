@@ -142,6 +142,10 @@ def validate_abs(args, device_id):
         for xent, cp in xent_lst:
             step = int(cp.split('.')[-2].split('_')[-1])
             test_abs(args, device_id, cp, step)
+        xent, best_cp = xent_lst[0]
+        step = int(best_cp.split('.')[-2].split('_')[-1])
+        with open(os.path.join(args.model_path, 'model_step_best.txt'), 'w') as fout:
+            fout.write(f'{step}\n')
     else:
         while (True):
             cp_files = sorted(glob.glob(os.path.join(args.model_path, 'model_step_*.pt')))

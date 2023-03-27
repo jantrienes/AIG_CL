@@ -13,9 +13,8 @@ nlp2 = stanza.Pipeline('en', package='mimic', processors='tokenize')
 EMB_INIT_RANGE = 1.0
 stop_words = ['XXXX','.',',',';',':']
 
-def get_single_entity_graph(document,impression,entity_modified=True,entity_interval=True,entity_deparser=True):
+def get_single_entity_graph(document,entity_modified=True,entity_interval=True,entity_deparser=True):
     doc = nlp(document)
-    imp = nlp2(impression)
     fingings_list = []
     impression_list = []
     current_senquence_num = 0
@@ -29,10 +28,6 @@ def get_single_entity_graph(document,impression,entity_modified=True,entity_inte
     graphs = []
     entities = []
     words_id_entities = []
-
-    for sentence in imp.sentences:
-        for i in range(len(sentence.words)):
-            impression_list.append(sentence.words[i].text)
 
     for sentence in doc.sentences:
         sent = []
@@ -181,7 +176,7 @@ def get_single_entity_graph(document,impression,entity_modified=True,entity_inte
         pyg_edges_document.append([src_index,tag_index])
 
 
-    return pyg_edges_document,edge_words,fingings_list,impression_list,edges_type,words_id_entities
+    return pyg_edges_document,edge_words,fingings_list,edges_type,words_id_entities
 
 
 def build_entity_graph(data_path,entity_interval=True,entity_deparser=True):
@@ -202,36 +197,28 @@ def build_entity_graph(data_path,entity_interval=True,entity_deparser=True):
             dic_items = json.loads(lines[i])
             findings_list = dic_items['findings']
             findings = ' '.join(findings_list)
-            impression_list = dic_items['impression']
-            impression = ' '.join(impression_list)
             edges_with_nodeid = []
 
-            edges,edge_words,fingings_list,impression_list,edges_type_sentence,words_id_entities = get_single_entity_graph(findings,impression,
-                                                                                     entity_interval=entity_interval,
-                                                                                     entity_deparser=entity_deparser)
+            edges,edge_words,fingings_list,edges_type_sentence,words_id_entities = get_single_entity_graph(
+                findings,
+                entity_interval=entity_interval,
+                entity_deparser=entity_deparser
+            )
 
             dic_items['pyg_edges_document'] = edges
             dic_items['findings'] = fingings_list
-            dic_items['impression'] = impression_list
             dic_items['edge_words'] = edge_words
             dic_items['words_id_entities'] = words_id_entities
             edges = dic_items['pyg_edges_document']
-
-
-
-
-
 
             findings_one_list = []
             for seq in fingings_list:
                 findings_one_list = findings_one_list + seq
 
-            if len(findings_one_list)>10 and len(impression_list)>3:
-                print(json.dumps(dic_items), file=new_json_file)
+            print(json.dumps(dic_items), file=new_json_file)
 
 
 
 
 if __name__ == '__main__':
-
     build_entity_graph('./example.jsonl')
