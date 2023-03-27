@@ -1,3 +1,4 @@
+import argparse
 import stanza
 import os
 import json
@@ -6,9 +7,9 @@ import sys,os
 import pickle
 import numpy as np
 import sys,os
+from pathlib import Path
 
 nlp = stanza.Pipeline('en', package='mimic', processors={'ner': 'radiology'})
-nlp2 = stanza.Pipeline('en', package='mimic', processors='tokenize')
 
 EMB_INIT_RANGE = 1.0
 stop_words = ['XXXX','.',',',';',':']
@@ -18,8 +19,6 @@ def get_single_entity_graph(document,entity_modified=True,entity_interval=True,e
     fingings_list = []
     impression_list = []
     current_senquence_num = 0
-    print(document)
-    print(doc)
     edges = []
     edge_words = []
     edges_type = dict()
@@ -120,8 +119,6 @@ def get_single_entity_graph(document,entity_modified=True,entity_interval=True,e
                             edges_sentence.append([word_doc_head, word_doc_id])
                             edges_type_sentence['deparser'].append([word_doc_head, word_doc_id])
 
-                            print(sentence.words[word_head - 1].text, sentence.words[word_id - 1].text)
-
                             edges_word_sentence.append(
                                 [sentence.words[word_head - 1].text, sentence.words[word_id - 1].text])
 
@@ -179,20 +176,18 @@ def get_single_entity_graph(document,entity_modified=True,entity_interval=True,e
     return pyg_edges_document,edge_words,fingings_list,edges_type,words_id_entities
 
 
-def build_entity_graph(data_path,entity_interval=True,entity_deparser=True):
-    file = open(data_path, 'r', encoding='utf-8')
-    lines = file.readlines()
+def build_entity_graph(input_file, output_file, entity_interval=True,entity_deparser=True):
+    with open(input_file, 'r', encoding='utf-8') as fin:
+        lines = fin.readlines()
     num_line = len(lines)
-    new_json_path = data_path.replace('.jsonl', '')
-    name_type = '_real_entity_with_graph'
+    if (os.path.exists(output_file)):
+        print('there are already exist ' + output_file)
+        return output_file
 
+    out_path = Path(output_file).parent
+    out_path.mkdir(exist_ok=True, parents=True)
 
-    new_json_path = new_json_path + name_type + '.jsonl'
-    if (os.path.exists(new_json_path)):
-        print('there are already exist ' + new_json_path)
-        return new_json_path
-    else:
-        new_json_file = open(new_json_path, 'w', encoding='utf-8')
+    with open(output_file, 'w', encoding='utf-8') as fout:
         for i in tqdm(range(num_line)):
             dic_items = json.loads(lines[i])
             findings_list = dic_items['findings']
@@ -215,10 +210,16 @@ def build_entity_graph(data_path,entity_interval=True,entity_deparser=True):
             for seq in fingings_list:
                 findings_one_list = findings_one_list + seq
 
-            print(json.dumps(dic_items), file=new_json_file)
+            print(json.dumps(dic_items), file=fout)
 
 
+def arg_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input_file", default="example.jsonl")
+    parser.add_argument("output_file", default="example_real_entity_with_graph.jsonl")
+    return parser.parse_args()
 
 
-if __name__ == '__main__':
-    build_entity_graph('./example.jsonl')
+if __name__ == "__main__":
+    args = arg_parser()
+    build_entity_graph(args.input_file, args.output_file)
