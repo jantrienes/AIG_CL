@@ -198,6 +198,7 @@ class Translator(object):
                 self.tensorboard_writer.add_scalar('test/rouge1-F', rouges['rouge_1_f_score'], step)
                 self.tensorboard_writer.add_scalar('test/rouge2-F', rouges['rouge_2_f_score'], step)
                 self.tensorboard_writer.add_scalar('test/rougeL-F', rouges['rouge_l_f_score'], step)
+            return rouges
 
     def _report_rouge(self, gold_path, can_path):
         self.logger.info("Calculating Rouge")
