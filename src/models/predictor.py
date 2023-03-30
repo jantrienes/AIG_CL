@@ -11,7 +11,7 @@ from tensorboardX import SummaryWriter
 
 # from others.utils import rouge_results_to_str, test_rouge, tile
 from translate.beam import GNMTGlobalScorer
-from others.utils import rouge_results_to_str, test_rouge, tile, calculate_rouge, rouge_results_to_str2
+from others.utils import rouge_results_to_str, test_rouge, tile
 
 
 def build_predictor(args, tokenizer, symbols, model, logger=None):
@@ -193,7 +193,7 @@ class Translator(object):
 
         if (step != -1):
             rouges = self._report_rouge(gold_path, can_path)
-            self.logger.info('Rouges at step %d \n%s' % (step, rouge_results_to_str2(rouges)))
+            self.logger.info('Rouges at step %d \n%s' % (step, rouge_results_to_str(rouges)))
             if self.tensorboard_writer is not None:
                 self.tensorboard_writer.add_scalar('test/rouge1-F', rouges['rouge_1_f_score'], step)
                 self.tensorboard_writer.add_scalar('test/rouge2-F', rouges['rouge_2_f_score'], step)
@@ -202,8 +202,7 @@ class Translator(object):
 
     def _report_rouge(self, gold_path, can_path):
         self.logger.info("Calculating Rouge")
-        # results_dict = test_rouge(self.args.temp_dir, can_path, gold_path)
-        results_dict = calculate_rouge(can_path, gold_path)
+        results_dict = test_rouge(self.args.temp_dir, can_path, gold_path)
         return results_dict
 
     def translate_batch(self, batch, fast=False):

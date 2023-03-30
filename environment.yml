@@ -13,7 +13,6 @@ dependencies:
     - pytorch-transformers==1.2.0
     - tensorboardX==2.4
     - tensorboard==2.6.0
-    - git+https://github.com/tagucci/pythonrouge.git
     - torch-scatter==2.0.7 -f https://data.pyg.org/whl/torch-1.7.1+cu110.html
     - torch-sparse==0.6.9 -f https://data.pyg.org/whl/torch-1.7.1+cu110.html
     - "torch-geometric<2"
