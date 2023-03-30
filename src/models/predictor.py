@@ -346,6 +346,7 @@ class Translator(object):
             batch_index = (
                     topk_beam_index
                     + beam_offset[:topk_beam_index.size(0)].unsqueeze(1))
+            select_indices = batch_index.view(-1)
             select_indices = select_indices.type(torch.LongTensor).to(device=device)
 
             # Append last prediction.
@@ -390,6 +391,7 @@ class Translator(object):
                 alive_seq = predictions.index_select(0, non_finished) \
                     .view(-1, alive_seq.size(-1))
             # Reorder states.
+            select_indices = batch_index.view(-1)
             select_indices = select_indices.type(torch.LongTensor).to(device=device)
             src_features = src_features.index_select(0, select_indices)
             tile_node_id = tile_node_id.index_select(0, select_indices)
