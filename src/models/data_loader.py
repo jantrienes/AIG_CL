@@ -225,7 +225,9 @@ class DataIterator(object):
 
     def preprocess(self, ex, is_test):
         src = ex['src']
-        tgt = ex['tgt'][:self.args.max_tgt_len][:-1]+[2]
+        tgt = ex['tgt']
+        eos_id = [tgt[-1]]
+        tgt = tgt[:-1][:self.args.max_tgt_len - 1] + eos_id
         src_sent_labels = ex['src_sent_labels']
         segs = ex['segs']
         if(not self.args.use_interval):

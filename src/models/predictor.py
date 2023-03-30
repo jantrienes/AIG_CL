@@ -58,8 +58,7 @@ class Translator(object):
         self.vocab = vocab
         self.symbols = symbols
         self.start_token = symbols['BOS']
-        # self.end_token = symbols['EOS']
-        self.end_token = symbols['EOQ']
+        self.end_token = symbols['EOS']
 
         self.global_scorer = global_scorer
         self.beam_size = args.beam_size
